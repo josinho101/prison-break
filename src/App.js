@@ -10,7 +10,7 @@ const App = () => {
   const tileTextures = useRef([]);
   const playerTextures = useRef([]);
 
-  const scale = 2;
+  const scale = 4;
   const playerScale = scale * 1.5;
 
   const tileOptions = {
@@ -59,7 +59,7 @@ const App = () => {
         }
 
         player.current = new PIXI.Sprite(playerTextures.current[0]);
-        player.current.scale.set(playerScale);
+        player.current.scale.set(scale);
         player.current.x = app.current.renderer.width / 2;
         player.current.y = app.current.renderer.height / 2;
 
@@ -96,10 +96,9 @@ const App = () => {
     }
   };
 
-  const testCollision = (worldX, worldY) => {
-    let mapX = Math.floor(worldX / tileOptions.size);
-    let mapY = Math.floor(worldY / tileOptions.size);
-
+  const hasCollided = (worldX, worldY) => {
+    let mapX = Math.floor(worldX / tileOptions.size / scale);
+    let mapY = Math.floor(worldY / tileOptions.size / scale);
     return map.collision[mapY * map.width + mapX];
   };
 
@@ -109,21 +108,18 @@ const App = () => {
     player.current.x = character.x;
     player.current.y = character.y;
 
-    character.vy = character.vy + 0.15;
-    character.x += character.vx;
-    character.y += character.vy;
+    // set max falling velocity for player
+    character.vy = Math.min(2 * scale, character.vy + 1);
 
     if (character.vy > 0) {
       for (let i = 0; i < character.vy; i++) {
-        let testX1 = character.x / tileOptions.size;
-        let testX2 = character.x + tileOptions.size - 1;
-        let testY = character.y + tileOptions.size * 2;
-
-        if (testCollision(testX1, testY)) {
+        let testX = character.x;
+        let testY = character.y + tileOptions.size * scale;
+        if (hasCollided(testX, testY)) {
           character.vy = 0;
           break;
         }
-        character.y += character.y + 1;
+        character.y = character.y + 1;
       }
     }
   };
