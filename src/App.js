@@ -2,6 +2,7 @@ import map from "./map.json";
 import * as PIXI from "pixi.js";
 import { useRef, useEffect } from "react";
 import { Sprite } from "pixi.js";
+import Keyboard from "./keyboard";
 
 const App = () => {
   const rootRef = useRef();
@@ -9,6 +10,7 @@ const App = () => {
   const player = useRef();
   const tileTextures = useRef([]);
   const playerTextures = useRef([]);
+  const kb = useRef(new Keyboard());
 
   const scale = 4;
   const playerScale = scale * 1.5;
@@ -29,6 +31,9 @@ const App = () => {
 
     app.current.loader.onError.add((...args) => console.error(args));
     rootRef.current.appendChild(app.current.view);
+    // add element focusable to trigger keyboard events
+    app.current.view.setAttribute("tabindex", 0);
+    kb.current.watch(app.current.view);
 
     drawStage();
 
@@ -121,6 +126,24 @@ const App = () => {
         }
         character.y = character.y + 1;
       }
+    }
+
+    if (character.vy < 0) {
+      character.y += character.vy;
+    }
+
+    if (character.vx > 0) {
+      character.x = character.vx;
+    }
+
+    // Jumb up
+    if (kb.current.pressed.ArrowUp) {
+      character.vy = -7;
+    }
+
+    // Move right
+    if (kb.current.pressed.ArrowRight) {
+      character.vx += 3;
     }
   };
 
