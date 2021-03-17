@@ -12,7 +12,7 @@ const App = () => {
   const playerTextures = useRef([]);
   const kb = useRef(new Keyboard());
 
-  const scale = 4;
+  const scale = 2;
   const playerScale = scale * 1.5;
 
   const tileOptions = {
@@ -45,7 +45,7 @@ const App = () => {
   const drawStage = () => {
     app.current.loader
       .add("tiles", "./assets/tileset.png")
-      .add("playerwalking", "./assets/walking_sheet.png")
+      .add("character", "./assets/character.png")
       .load((loader, resource) => {
         generateWorldTiles(resource);
         generatePlayerTiles(resource);
@@ -76,13 +76,14 @@ const App = () => {
   };
 
   const generatePlayerTiles = (resource) => {
-    const size = 16;
-    for (let i = 0; i < 6; i++) {
-      let x = i % 6;
-      let y = Math.floor(i / 6);
+    const sizeX = 16;
+    const sizeY = 32;
+    for (let i = 0; i < 8; i++) {
+      let x = i % 8;
+      let y = Math.floor(i / 8);
       const texture = new PIXI.Texture(
-        resource.playerwalking.texture,
-        new PIXI.Rectangle(x * size, y * size, size, size)
+        resource.character.texture,
+        new PIXI.Rectangle(x * sizeX, y * sizeY, sizeX, sizeY)
       );
       playerTextures.current.push(texture);
     }
@@ -116,11 +117,16 @@ const App = () => {
     // set max falling velocity for player
     character.vy = Math.min(2 * scale, character.vy + 1);
 
+    let touchingGound = hasCollided(character.x, character.y + 32 * scale + 1);
+
+    // console.log(touchingGound);
+
     if (character.vy > 0) {
       for (let i = 0; i < character.vy; i++) {
-        let testX = character.x;
-        let testY = character.y + tileOptions.size * scale;
-        if (hasCollided(testX, testY)) {
+        let testX = character.x + 2;
+        let testX2 = character.x + tileOptions.size * scale - 3;
+        let testY = character.y + tileOptions.size * scale * 2;
+        if (hasCollided(testX, testY) || hasCollided(testX2, testY)) {
           character.vy = 0;
           break;
         }
@@ -136,7 +142,7 @@ const App = () => {
       character.x = character.vx;
     }
 
-    // Jumb up
+    // Jump up
     if (kb.current.pressed.ArrowUp) {
       character.vy = -7;
     }
@@ -144,6 +150,12 @@ const App = () => {
     // Move right
     if (kb.current.pressed.ArrowRight) {
       character.vx += 3;
+    }
+
+    if (!touchingGound) {
+      player.current.texture = playerTextures.current[1];
+    } else {
+      player.current.texture = playerTextures.current[0];
     }
   };
 
